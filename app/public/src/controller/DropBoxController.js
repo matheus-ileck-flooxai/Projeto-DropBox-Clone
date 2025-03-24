@@ -8,10 +8,12 @@ constructor() {
     this.progressBarEl = this.snackModalEl.querySelector('.mc-progress-bar-fg');
     this.nameFileEl = this.snackModalEl.querySelector('.filename');
     this.timeleftEL = this.snackModalEl.querySelector('.timeleft');
+    this.listFilesEl = document.querySelector('#list-of-files-and-directories');
 
 
     this.connectFirebase();
     this.initEvents();
+    this.readFiles();
 }
 
 connectFirebase(){
@@ -166,28 +168,49 @@ connectFirebase(){
 
     }
 
+    getFileView(file, key){
+
+        let li = document.createElement('li');
+
+        li.dataset.key = key;
+
+        li.innerHTML  =   
+         `<li>
+            ${this.getFileIconView(file)}
+            <div class="name text-center">${file.name}</div>
+        </li>`;
+
+        return li;
+
+      
+    }
+
     getFileIconView(file){
 
         switch(file.type){
 
 
             case 'folder':
-                return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
-                      <title>content-folder-large</title>
+                return `
+                        <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
+                                        <title>content-folder-large</title>
                                         <g fill="none" fill-rule="evenodd">
                                             <path d="M77.955 53h50.04A3.002 3.002 0 0 1 131 56.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 114.995V45.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#71B9F4"></path>
                                             <path d="M77.955 52h50.04A3.002 3.002 0 0 1 131 55.007v58.988a4.008 4.008 0 0 1-4.003 4.005H39.003A4.002 4.002 0 0 1 35 113.995V44.99c0-2.206 1.79-3.99 3.997-3.99h26.002c1.666 0 3.667 1.166 4.49 2.605l3.341 5.848s1.281 2.544 5.12 2.544l.005.003z" fill="#92CEFF"></path>
                                         </g>
-                                    </svg>`;
+                                    </svg>
+                                    <div class="name text-center">Meus Documentos</div>
+                               `;
+                                    break;
 
 
             case 'application/pdf':
-                return `<li>
-                                    <svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="160px" height="160px" viewBox="0 0 160 160" enable-background="new 0 0 160 160" xml:space="preserve">
-                                        <filter height="102%" width="101.4%" id="mc-content-unknown-large-a" filterUnits="objectBoundingBox" y="-.5%" x="-.7%">
-                                            <feOffset result="shadowOffsetOuter1" in="SourceAlpha" dy="1"></feOffset>
-                                            <feColorMatrix values="0 0 0 0 0.858823529 0 0 0 0 0.870588235 0 0 0 0 0.88627451 0 0 0 1 0" in="shadowOffsetOuter1">
-                                            </feColorMatrix>
+                return `
+                        <svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="160px" height="160px" viewBox="0 0 160 160" enable-background="new 0 0 160 160" xml:space="preserve">
+                            <filter height="102%" width="101.4%" id="mc-content-unknown-large-a" filterUnits="objectBoundingBox" y="-.5%" x="-.7%">
+                                <feOffset result="shadowOffsetOuter1" in="SourceAlpha" dy="1"></feOffset>
+                                    <feColorMatrix values="0 0 0 0 0.858823529 0 0 0 0 0.870588235 0 0 0 0 0.88627451 0 0 0 1 0" in="shadowOffsetOuter1">
+                                        </feColorMatrix>
                                         </filter>
                                         <title>PDF</title>
                                         <g>
@@ -214,9 +237,8 @@ connectFirebase(){
                                                 M81.955,86.183c-0.912,0.01-2.209,0.098-1.733-1.421c0.264-0.841,0.955-2.04,1.622-2.162c1.411-0.259,1.409,1.421,2.049,2.186
                                                 C84.057,86.456,82.837,86.174,81.955,86.183z M96.229,94.8c-1.14-0.082-1.692-1.111-1.785-2.033
                                                 c-0.131-1.296,1.072-0.867,1.753-0.876c0.796-0.011,1.668,0.118,1.588,1.293C97.394,93.857,97.226,94.871,96.229,94.8z"></path>
-                                    </svg>
-                                    <div class="name text-center">PDF</div>
-                                </li>`
+                                    </svg>`
+                                break;
 
             case 'audio/mp3':
             case 'audio/ogg':
@@ -237,15 +259,13 @@ connectFirebase(){
                                             </g>
                                             <path d="M67 60c0-1.657 1.347-3 3-3 1.657 0 3 1.352 3 3v40c0 1.657-1.347 3-3 3-1.657 0-3-1.352-3-3V60zM57 78c0-1.657 1.347-3 3-3 1.657 0 3 1.349 3 3v4c0 1.657-1.347 3-3 3-1.657 0-3-1.349-3-3v-4zm40 0c0-1.657 1.347-3 3-3 1.657 0 3 1.349 3 3v4c0 1.657-1.347 3-3 3-1.657 0-3-1.349-3-3v-4zm-20-5.006A3 3 0 0 1 80 70c1.657 0 3 1.343 3 2.994v14.012A3 3 0 0 1 80 90c-1.657 0-3-1.343-3-2.994V72.994zM87 68c0-1.657 1.347-3 3-3 1.657 0 3 1.347 3 3v24c0 1.657-1.347 3-3 3-1.657 0-3-1.347-3-3V68z" fill="#637282"></path>
                                         </g>
-                                    </svg>
-                                    <div class="name text-center">Music</div>
-                                </li>`
+                                    </svg>`
+                                break;
 
 
             case 'video/mp4':
             case 'video/quicktime':
-                return `<li>
-                                    <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
+                return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                                         <title>content-video-large</title>
                                         <defs>
                                             <rect id="mc-content-video-large-b" x="30" y="43" width="100" height="74" rx="4"></rect>
@@ -261,16 +281,14 @@ connectFirebase(){
                                             </g>
                                             <path d="M69 67.991c0-1.1.808-1.587 1.794-1.094l24.412 12.206c.99.495.986 1.3 0 1.794L70.794 93.103c-.99.495-1.794-.003-1.794-1.094V67.99z" fill="#637282"></path>
                                         </g>
-                                    </svg>
-                                    <div class="name text-center">Video</div>
-                                </li>`
+                                    </svg> `
+                                break;
 
-            case 'image/jpge':
+            case 'image/jpeg':
             case 'image/jpg':
             case 'img/png':
             case 'image/gif':
-                return `<li>
-                                    <svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="160px" height="160px" viewBox="0 0 160 160" enable-background="new 0 0 160 160" xml:space="preserve">
+                return `<svg version="1.1" id="Camada_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="160px" height="160px" viewBox="0 0 160 160" enable-background="new 0 0 160 160" xml:space="preserve">
                                         <filter height="102%" width="101.4%" id="mc-content-unknown-large-a" filterUnits="objectBoundingBox" y="-.5%" x="-.7%">
                                             <feOffset result="shadowOffsetOuter1" in="SourceAlpha" dy="1"></feOffset>
                                             <feColorMatrix values="0 0 0 0 0.858823529 0 0 0 0 0.870588235 0 0 0 0 0.88627451 0 0 0 1 0" in="shadowOffsetOuter1">
@@ -308,16 +326,15 @@ connectFirebase(){
                                                     c-2.309,0.033-4.344-1.984-4.313-4.276c0.03-2.263,2.016-4.213,4.281-4.206C72.207,72.338,74.179,74.298,74.188,76.557z"></path>
                                         </g>
                                     </svg>
-                                    <div class="name text-center">Imagem</div>
-                                </li>`;
+                                   `;
+                                break;
 
 
 
             
 
             default:
-                return `<li>
-                                    <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
+                return `<svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
                                         <title>1357054_617b.jpg</title>
                                         <defs>
                                             <rect id="mc-content-unknown-large-b" x="43" y="30" width="74" height="100" rx="4"></rect>
@@ -333,17 +350,33 @@ connectFirebase(){
                                             </g>
                                         </g>
                                     </svg>
-                                    <div class="name text-center">Arquivo</div>
-                                </li>`; 
+                                  `; 
+                                break;
+
         }
 
     }
 
-    getFileView(file){
-        return `<li>
-                    ${this.getFileIconView(file)}
-                    <div class="name text-center">${file.name}</div>
-                </li>`;
+   
+
+    readFiles(){
+
+        this.getFirebaseRef().on('value', snapshot=>{
+
+            this.listFilesEl.innerHTML = '';
+
+            snapshot.forEach(snapshotItem=>{
+
+                let key = snapshotItem.key;
+                let data = snapshotItem.val();
+
+
+                this.listFilesEl.appendChild(this.getFileView(data, key));
+
+            });
+
+        });
+
     }
 
 }
