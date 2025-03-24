@@ -15,25 +15,57 @@ constructor() {
 }
 
 connectFirebase(){
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCPHiu1a1PRB9Fw7gqxF46BcNgqzLhMmvk",
+        authDomain: "dropbox-clone-5d3e2.firebaseapp.com",
+        databaseURL: "https://dropbox-clone-5d3e2-default-rtdb.firebaseio.com",
+        projectId: "dropbox-clone-5d3e2",
+        storageBucket: "dropbox-clone-5d3e2.firebasestorage.app",
+        messagingSenderId: "878425790811",
+        appId: "1:878425790811:web:b7e2f2160d27047f13a27e",
+        measurementId: "G-8M2C36QK0W"
+      };
     
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
     
 }
 
-initEvents(){
+    initEvents(){
 
-    this.btnSendFileEl.addEventListener('click',event=>{
-        this.inputFilesEl.click();
-    });
+        this.btnSendFileEl.addEventListener('click',event=>{
+            this.inputFilesEl.click();
+        });
 
-    this.inputFilesEl.addEventListener('change', event=>{
+        this.inputFilesEl.addEventListener('change', event=>{
 
-        this.uploadTask(event.target.files);
+            this.btnSendFileEl.disabled = true;
 
-        this.modalShow();
+            this.uploadTask(event.target.files).then(responses =>{
 
-        this.inputFilesEl.value = '';
-    })
-}
+                responses.forEach(resp =>{
+
+                   
+
+                    this.getFirebaseRef().push().set(resp.files['input-file']);
+
+                });
+                this.uploadComplete();
+
+            }).catch(err=>{
+                this.uploadComplete();
+                console.log(err);
+            })
+
+            this.modalShow();
+
+        });
+    }
+    getFirebaseRef(){
+
+        return firebase.database().ref('files');
+    }
 
     modalShow(show = true){
         
@@ -54,7 +86,6 @@ initEvents(){
 
                 ajax.onload = event =>{
 
-                    this.modalShow(false);
 
 
                     try{
@@ -68,7 +99,6 @@ initEvents(){
 
                 ajax.onerror = event =>{
 
-                    this.modalShow(false);
 
                     reject(event)
                 };
@@ -105,6 +135,15 @@ initEvents(){
 
         this.nameFileEl.innerHTML = file.name;
         this.timeleftEL.innerHTML = this.formatTimeToHuman(timeleft);
+
+    }
+
+    uploadComplete(){
+
+
+        this.modalShow(false);
+        this.inputFilesEl.value = '';
+        this.btnSendFileEl.disabled = false;
 
     }
 
