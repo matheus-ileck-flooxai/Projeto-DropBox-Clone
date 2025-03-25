@@ -11,6 +11,11 @@ constructor() {
     this.timeleftEL = this.snackModalEl.querySelector('.timeleft');
     this.listFilesEl = document.querySelector('#list-of-files-and-directories');
 
+    this.btnNewFolder = document.querySelector('#btn-new-folder');
+    this.btnRename = document.querySelector('#btn-rename');
+    this.btnDelete = document.querySelector('#btn-delete');
+
+
 
     this.connectFirebase();
     this.initEvents();
@@ -35,11 +40,52 @@ connectFirebase(){
     
 }
 
+    getSelection(){
+
+        return this.listFilesEl.querySelectorAll('.selected');
+    }
+
     initEvents(){
+
+
+        this.btnRename.addEventListener('click', e=>{
+
+            let li = this.getSelection()[0];
+
+            let file = JSON.parse(li.dataset.file);
+
+            let name = prompt("Renomear o arquivo:", file.name);
+
+            if(name){
+
+                file.name = name;
+
+                this.getFirebaseRef().child(li.dataset.key).set(file);
+            }
+
+
+        });
 
         this.listFilesEl.addEventListener('selectionchange', e=>{
 
-            console.log('selectionchange');
+
+            switch(this.getSelection().length){
+
+                case 0:
+                    this.btnDelete.style.display = 'none';
+                    this.btnRename.style.display = 'none';
+                    break;
+
+                case  1:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'block';
+                    break;
+
+                default:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'none';
+                    break;
+            }
             
 
 
@@ -182,6 +228,8 @@ connectFirebase(){
         let li = document.createElement('li');
 
         li.dataset.key = key;
+        li.dataset.file = JSON.stringify(file);
+
 
         li.innerHTML  =   
          `<li>
@@ -395,12 +443,6 @@ connectFirebase(){
 
         li.addEventListener('click', e=>{
 
-
-            this.onselectionchange = new Event('selectionchange');
-
-            this.listFilesEl.dispatchEvent(this.onselectionchange)
-
-
             if(e.shiftKey){
 
                 let firstLi = this.listFilesEl.querySelector('.selected');
@@ -430,6 +472,9 @@ connectFirebase(){
                         }
 
                     });
+
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
+
                     return true
                 }
 
@@ -444,6 +489,8 @@ connectFirebase(){
             }
 
             li.classList.toggle('selected');
+
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
         });
 
